@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from src.ai_service import generate_follow_up_email
+from src.ai_service import generate_follow_up_email, generate_weekly_summary
 from src.lead_assistant import answer_lead_question
 from src.database import (
     initialize_database,
@@ -213,7 +213,34 @@ with tab1:
             "Possible duplicate records detected. "
             "Pipeline totals may be overstated."
         )
+    # AI WEEKLY SALES SUMMARY
+    st.divider()
+    st.subheader("AI Weekly Sales Priorities")
 
+    st.write(
+        "Generate an AI-powered weekly action plan "
+        "to identify which corporate leads to chase first."
+    )
+
+    if st.button("Generate Weekly AI Summary", type="primary"):
+        try:
+            with st.spinner("Generating weekly sales priorities..."):
+                summary = generate_weekly_summary(get_all_leads())
+
+            st.session_state["weekly_ai_summary"] = summary
+
+        except Exception as error:
+            st.error(f"Summary generation failed: {error}")
+
+    if st.session_state.get("weekly_ai_summary"):
+        st.markdown(st.session_state["weekly_ai_summary"])
+
+        st.download_button(
+            label="Download Weekly Summary",
+            data=st.session_state["weekly_ai_summary"],
+            file_name="BIAI_Weekly_Sales_Summary.txt",
+            mime="text/plain"
+        )
 
 # TAB 2: ALL LEADS
 with tab2:
@@ -224,6 +251,17 @@ with tab2:
         use_container_width=True,
         hide_index=True
     )
+    st.subheader("Export Sales Pipeline")
+
+    pipeline_df = pd.DataFrame(get_all_leads())
+
+    st.download_button(
+      label="Download Full Pipeline (CSV)",
+      data=pipeline_df.to_csv(index=False).encode("utf-8-sig"),
+      file_name="BIAI_LeadPilot_Pipeline.csv",
+      mime="text/csv",
+      key="download_full_pipeline"
+)
 
 
 # TAB 3: DATA QUALITY ISSUES
