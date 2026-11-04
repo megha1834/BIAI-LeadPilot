@@ -17,6 +17,13 @@ def answer_lead_question(question, leads, issues):
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
+      try:
+        import streamlit as st
+        api_key = st.secrets.get("GEMINI_API_KEY")
+      except (FileNotFoundError, KeyError):
+        pass
+
+    if not api_key:
         raise ValueError("GEMINI_API_KEY is missing.")
 
     df = pd.DataFrame(leads)

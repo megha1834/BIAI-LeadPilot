@@ -12,6 +12,13 @@ def generate_follow_up_email(lead):
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
+      try:
+        import streamlit as st
+        api_key = st.secrets.get("GEMINI_API_KEY")
+      except (FileNotFoundError, KeyError):
+        pass
+
+    if not api_key:
         raise ValueError("GEMINI_API_KEY is missing.")
 
     client = genai.Client(api_key=api_key)
